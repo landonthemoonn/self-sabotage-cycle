@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Self-Sabotage Cycle — Interactive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Fraunces:opsz,wght@9..144,500;9..144,700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #1a1a1f;
+      background-image: 
+        radial-gradient(ellipse at 30% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, rgba(251, 146, 60, 0.06) 0%, transparent 50%);
+      font-family: 'DM Sans', sans-serif;
+      padding: 2rem;
+      gap: 2rem;
+    }
+
+    .page-title {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(1.2rem, 4vw, 1.6rem);
+      color: rgba(255, 255, 255, 0.9);
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .page-subtitle {
+      font-size: clamp(0.8rem, 2.5vw, 0.95rem);
+      color: rgba(255, 255, 255, 0.4);
+      text-align: center;
+      margin-top: 0.5rem;
+      font-weight: 300;
+    }
+
+    .main-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .cycle-container {
+      position: relative;
+      width: min(420px, 85vw);
+      height: min(420px, 85vw);
+      flex-shrink: 0;
+    }
+
+    .circle-path {
+      position: absolute;
+      inset: 0;
+      border: 2px dashed rgba(255, 255, 255, 0.12);
+      border-radius: 50%;
+    }
+
+    .circle-path::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 50%;
+      background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        rgba(139, 92, 246, 0.4) 30deg,
+        transparent 60deg
+      );
+      animation: rotate 12s linear infinite;
+      mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+    }
+
+    @keyframes rotate {
+      to { transform: rotate(360deg); }
+    }
+
+    .arrows {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .arrow {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid rgba(255, 255, 255, 0.25);
+      border-top: 2px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .arrow:nth-child(1) { top: 3%; left: 65%; transform: rotate(45deg); }
+    .arrow:nth-child(2) { top: 30%; right: 1%; transform: rotate(135deg); }
+    .arrow:nth-child(3) { bottom: 22%; right: 3%; transform: rotate(135deg); }
+    .arrow:nth-child(4) { bottom: 3%; left: 35%; transform: rotate(225deg); }
+    .arrow:nth-child(5) { top: 68%; left: 1%; transform: rotate(-45deg); }
+    .arrow:nth-child(6) { top: 22%; left: 3%; transform: rotate(-45deg); }
+
+    .center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      width: 60%;
+      transition: opacity 0.3s ease;
+    }
+
+    .center.hidden {
+      opacity: 0.3;
+    }
+
+    .center-label {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(0.6rem, 1.8vw, 0.75rem);
+      color: rgba(255, 255, 255, 0.5);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+    }
+
+    .center-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      align-items: center;
+    }
+
+    .flow-item {
+      font-size: clamp(0.65rem, 2vw, 0.8rem);
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 300;
+    }
+
+    .flow-arrow {
+      color: rgba(139, 92, 246, 0.6);
+      font-size: 0.65rem;
+    }
+
+    .flow-highlight {
+      color: #fb923c;
+      font-weight: 500;
+    }
+
+    /* Nodes */
+    .node {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .node:nth-child(1) { top: 5%; left: 50%; }
+    .node:nth-child(2) { top: 25%; left: 93%; }
+    .node:nth-child(3) { top: 75%; left: 93%; }
+    .node:nth-child(4) { top: 95%; left: 50%; }
+    .node:nth-child(5) { top: 75%; left: 7%; }
+    .node:nth-child(6) { top: 25%; left: 7%; }
+
+    .node.dimmed {
+      opacity: 0.35;
+    }
+
+    .node.active {
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+
+    .node-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .node:hover .node-icon,
+    .node.active .node-icon {
+      border-width: 2px;
+      box-shadow: 0 0 25px var(--node-color, rgba(139, 92, 246, 0.4));
+    }
+
+    .node-number {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--node-color);
+      color: white;
+      font-size: 0.55rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .node-label {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(0.65rem, 2.2vw, 0.8rem);
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.9);
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    /* Node colors */
+    .node[data-node="1"] { --node-color: #fb923c; }
+    .node[data-node="2"] { --node-color: #fbbf24; }
+    .node[data-node="3"] { --node-color: #8b5cf6; }
+    .node[data-node="4"] { --node-color: #6366f1; }
+    .node[data-node="5"] { --node-color: #ef4444; }
+    .node[data-node="6"] { --node-color: #22c55e; }
+
+    .node[data-node="1"] .node-icon { background: rgba(251, 146, 60, 0.15); border-color: rgba(251, 146, 60, 0.4); }
+    .node[data-node="2"] .node-icon { background: rgba(251, 191, 36, 0.15); border-color: rgba(251, 191, 36, 0.4); }
+    .node[data-node="3"] .node-icon { background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.4); }
+    .node[data-node="4"] .node-icon { background: rgba(99, 102, 241, 0.15); border-color: rgba(99, 102, 241, 0.4); }
+    .node[data-node="5"] .node-icon { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); }
+    .node[data-node="6"] .node-icon { background: rgba(34, 197, 94, 0.15); border-color: rgba(34, 197, 94, 0.4); }
+
+    /* Strategy Panel */
+    .strategy-panel {
+      width: min(340px, 90vw);
+      min-height: 280px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 1.5rem;
+      backdrop-filter: blur(12px);
+      transition: all 0.4s ease;
+    }
+
+    .strategy-panel.empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.35);
+    }
+
+    .empty-state-icon {
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+      opacity: 0.5;
+    }
+
+    .empty-state-text {
+      font-size: 0.9rem;
+      font-weight: 300;
+    }
+
+    .strategy-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .strategy-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      background: var(--panel-color, rgba(139, 92, 246, 0.15));
+      border: 1px solid var(--panel-border, rgba(139, 92, 246, 0.3));
+    }
+
+    .strategy-title {
+      font-family: 'Fraunces', serif;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    .strategy-subtitle {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.45);
+      margin-top: 0.15rem;
+    }
+
+    .strategy-content {
+      animation: fadeSlideIn 0.4s ease;
+    }
+
+    @keyframes fadeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+    }
+
+    .strategy-section {
+      margin-bottom: 1.25rem;
+    }
+
+    .strategy-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .strategy-section-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--panel-accent, #8b5cf6);
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .strategy-text {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.75);
+      line-height: 1.6;
+      font-weight: 300;
+    }
+
+    .strategy-tip {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      padding: 0.75rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      margin-top: 0.5rem;
+    }
+
+    .strategy-tip-icon {
+      flex-shrink: 0;
+      font-size: 0.9rem;
+    }
+
+    .strategy-tip-text {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.6);
+      line-height: 1.5;
+      font-style: italic;
+    }
+
+    /* Close button */
+    .close-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+      display: none;
+    }
+
+    .strategy-panel:not(.empty) .close-btn {
+      display: flex;
+    }
+
+    .close-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .strategy-panel {
+      position: relative;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 800px) {
+      .main-container {
+        flex-direction: column;
+        gap: 2rem;
+      }
+      
+      .strategy-panel {
+        min-height: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 class="page-title">The Self-Sabotage Cycle</h1>
+    <p class="page-subtitle">Click a node to reveal strategies for breaking the pattern</p>
+  </header>
+
+  <div class="main-container">
+    <div class="cycle-container">
+      <div class="circle-path"></div>
+      
+      <div class="arrows">
+        <div class="arrow"></div>
+        <div class="arrow"></div>
+        <div class="arrow"></div>
+        <div class="arrow"></div>
+        <div class="arrow"></div>
+        <div class="arrow"></div>
+      </div>
+
+      <div class="node" data-node="1">
+        <div class="node-icon">
+          <span class="node-number">1</span>
+          ⚡
+        </div>
+        <span class="node-label">Hyper-Vision</span>
+      </div>
+
+      <div class="node" data-node="2">
+        <div class="node-icon">
+          <span class="node-number">2</span>
+          📦
+        </div>
+        <span class="node-label">Overcommit</span>
+      </div>
+
+      <div class="node" data-node="3">
+        <div class="node-icon">
+          <span class="node-number">3</span>
+          🔒
+        </div>
+        <span class="node-label">Perfection Lock</span>
+      </div>
+
+      <div class="node" data-node="4">
+        <div class="node-icon">
+          <span class="node-number">4</span>
+          🧹
+        </div>
+        <span class="node-label">Busy ≠ Productive</span>
+      </div>
+
+      <div class="node" data-node="5">
+        <div class="node-icon">
+          <span class="node-number">5</span>
+          😞
+        </div>
+        <span class="node-label">Shame Spiral</span>
+      </div>
+
+      <div class="node" data-node="6">
+        <div class="node-icon">
+          <span class="node-number">6</span>
+          🔁
+        </div>
+        <span class="node-label">Reset</span>
+      </div>
+
+      <div class="center">
+        <div class="center-label">The Loop</div>
+        <div class="center-flow">
+          <span class="flow-item"><span class="flow-highlight">Dopamine spike</span></span>
+          <span class="flow-arrow">↓</span>
+          <span class="flow-item">perfection</span>
+          <span class="flow-arrow">↓</span>
+          <span class="flow-item">shame</span>
+          <span class="flow-arrow">↓</span>
+          <span class="flow-item"><span class="flow-highlight">restart</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="strategy-panel empty" id="strategyPanel">
+      <button class="close-btn" id="closeBtn">×</button>
+      <div class="empty-state" id="emptyState">
+        <div class="empty-state-icon">👈</div>
+        <div class="empty-state-text">Select a stage to see<br>how to break the cycle</div>
+      </div>
+      <div class="strategy-content" id="strategyContent" style="display: none;"></div>
+    </div>
+  </div>
+
+  <script>
+    const strategies = {
+      1: {
+        title: "Hyper-Vision",
+        subtitle: "The exciting idea phase",
+        icon: "⚡",
+        color: "rgba(251, 146, 60, 0.15)",
+        border: "rgba(251, 146, 60, 0.3)",
+        accent: "#fb923c",
+        recognize: "You feel a rush of excitement. Everything feels possible. You're mentally 10 steps ahead, imagining the finished product.",
+        strategy: "Capture it, don't chase it. Write the idea down in a dedicated 'someday' list. Give yourself 24 hours before starting anything new. Ask: \"Does this serve something I've already committed to?\"",
+        tip: "The dopamine hit from imagining is almost as good as doing. Your brain doesn't know the difference—that's the trap."
+      },
+      2: {
+        title: "Overcommit",
+        subtitle: "Taking on too much",
+        icon: "📦",
+        color: "rgba(251, 191, 36, 0.15)",
+        border: "rgba(251, 191, 36, 0.3)",
+        accent: "#fbbf24",
+        recognize: "You've said yes to multiple things. Your todo list is exciting but suspiciously long. You're stacking projects like they don't take real time.",
+        strategy: "Use the 'Hell Yes or No' rule. If it's not an enthusiastic yes, it's a no. Before committing, physically check your calendar and current project list. Set a hard cap: max 2-3 active projects.",
+        tip: "Future you has the same 24 hours as current you. They're not more capable—they're just further away."
+      },
+      3: {
+        title: "Perfection Lock",
+        subtitle: "Paralysis by standards",
+        icon: "🔒",
+        color: "rgba(139, 92, 246, 0.15)",
+        border: "rgba(139, 92, 246, 0.3)",
+        accent: "#8b5cf6",
+        recognize: "You're stuck on details. Nothing feels 'ready.' You keep tweaking instead of shipping. The gap between your vision and reality feels crushing.",
+        strategy: "Set a 'good enough' threshold before you start. Use timeboxing: 2 hours on this feature, then move on. Ship something embarrassingly small. Done > perfect.",
+        tip: "Perfection is procrastination wearing a fancy hat. Your 80% is someone else's 100%."
+      },
+      4: {
+        title: "Busy ≠ Productive",
+        subtitle: "Motion without progress",
+        icon: "🧹",
+        color: "rgba(99, 102, 241, 0.15)",
+        border: "rgba(99, 102, 241, 0.3)",
+        accent: "#6366f1",
+        recognize: "You're organizing your tools, tweaking your setup, cleaning your desk, reorganizing Notion. It feels productive but nothing real is moving forward.",
+        strategy: "Ask every hour: \"Is this moving the needle or moving the furniture?\" Block your first 2 hours for real work before opening email/Slack. Track your actual output, not your busyness.",
+        tip: "Reorganizing is often just sophisticated avoidance. The work you're avoiding doesn't care how nice your system is."
+      },
+      5: {
+        title: "Shame Spiral",
+        subtitle: "The crash after the chase",
+        icon: "😞",
+        color: "rgba(239, 68, 68, 0.15)",
+        border: "rgba(239, 68, 68, 0.3)",
+        accent: "#ef4444",
+        recognize: "You feel behind, like a fraud. You're comparing your messy middle to everyone else's highlight reel. The inner critic is loud.",
+        strategy: "Name it: \"I'm in a shame spiral.\" Separate behavior from identity—you missed a deadline, you're not a failure. Talk to yourself like you'd talk to a friend. Take one tiny action to rebuild momentum.",
+        tip: "Shame wants you to hide. Action—even the smallest kind—is how you climb out."
+      },
+      6: {
+        title: "Reset",
+        subtitle: "The false fresh start",
+        icon: "🔁",
+        color: "rgba(34, 197, 94, 0.15)",
+        border: "rgba(34, 197, 94, 0.3)",
+        accent: "#22c55e",
+        recognize: "You're abandoning the current thing for a new thing. New tool, new system, new project. It feels like a solution but it's actually step 1 again.",
+        strategy: "Before resetting, do a 5-minute post-mortem: What actually went wrong? What pattern am I repeating? Commit to finishing ONE thing before starting anything new, even if it's imperfect.",
+        tip: "The grass isn't greener—it's just unstarted. Every new project eventually reaches the same hard middle."
+      }
+    };
+
+    const nodes = document.querySelectorAll('.node');
+    const panel = document.getElementById('strategyPanel');
+    const emptyState = document.getElementById('emptyState');
+    const strategyContent = document.getElementById('strategyContent');
+    const center = document.querySelector('.center');
+    const closeBtn = document.getElementById('closeBtn');
+
+    function showStrategy(nodeNum) {
+      const data = strategies[nodeNum];
+      
+      // Update panel styles
+      panel.style.setProperty('--panel-color', data.color);
+      panel.style.setProperty('--panel-border', data.border);
+      panel.style.setProperty('--panel-accent', data.accent);
+      
+      // Build content
+      strategyContent.innerHTML = `
+        <div class="strategy-header">
+          <div class="strategy-icon">${data.icon}</div>
+          <div>
+            <div class="strategy-title">${data.title}</div>
+            <div class="strategy-subtitle">${data.subtitle}</div>
+          </div>
+        </div>
+        <div class="strategy-section">
+          <div class="strategy-section-title">How to recognize it</div>
+          <div class="strategy-text">${data.recognize}</div>
+        </div>
+        <div class="strategy-section">
+          <div class="strategy-section-title">How to break it</div>
+          <div class="strategy-text">${data.strategy}</div>
+        </div>
+        <div class="strategy-tip">
+          <span class="strategy-tip-icon">💡</span>
+          <span class="strategy-tip-text">${data.tip}</span>
+        </div>
+      `;
+      
+      // Show content, hide empty state
+      panel.classList.remove('empty');
+      emptyState.style.display = 'none';
+      strategyContent.style.display = 'block';
+      
+      // Update node states
+      nodes.forEach(n => {
+        if (n.dataset.node === nodeNum.toString()) {
+          n.classList.add('active');
+          n.classList.remove('dimmed');
+        } else {
+          n.classList.remove('active');
+          n.classList.add('dimmed');
+        }
+      });
+      
+      // Dim center
+      center.classList.add('hidden');
+    }
+
+    function clearSelection() {
+      panel.classList.add('empty');
+      emptyState.style.display = 'block';
+      strategyContent.style.display = 'none';
+      
+      nodes.forEach(n => {
+        n.classList.remove('active', 'dimmed');
+      });
+      
+      center.classList.remove('hidden');
+    }
+
+    nodes.forEach(node => {
+      node.addEventListener('click', () => {
+        const nodeNum = parseInt(node.dataset.node);
+        showStrategy(nodeNum);
+      });
+    });
+
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      clearSelection();
+    });
+
+    // Click outside to clear
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.node') && !e.target.closest('.strategy-panel')) {
+        clearSelection();
+      }
+    });
+  </script>
+</body>
+</html>
