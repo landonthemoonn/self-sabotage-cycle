@@ -25,7 +25,7 @@ export default function About() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               <p className="text-xl text-gray-600 dark:text-gray-400 mb-6">
-                We're a creative digital studio focused on delivering exceptional
+                We&apos;re a creative digital studio focused on delivering exceptional
                 web experiences. Our team combines design thinking with technical
                 expertise to build products that matter.
               </p>

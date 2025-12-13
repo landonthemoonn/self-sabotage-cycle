@@ -12,12 +12,12 @@ export default function Contact() {
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-5xl md:text-6xl font-bold mb-8">Let's Talk</h2>
+          <h2 className="text-5xl md:text-6xl font-bold mb-8">Let&apos;s Talk</h2>
           <div className="grid md:grid-cols-2 gap-12">
             <div>
               <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
-                Have a project in mind? We'd love to hear from you. Get in touch
-                and let's create something amazing together.
+                Have a project in mind? We&apos;d love to hear from you. Get in touch
+                and let&apos;s create something amazing together.
               </p>
               <div className="space-y-4">
                 <div>
